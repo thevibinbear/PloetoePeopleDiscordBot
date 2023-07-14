@@ -1,4 +1,4 @@
-#Potential list of functionalities
+**Potential list of functionalities**
 
 1. Moderation Tools:
    - Kick and ban users.
