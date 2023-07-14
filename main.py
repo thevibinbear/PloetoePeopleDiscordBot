@@ -5,7 +5,7 @@ import asyncio
 
 # Set up the bot prefix
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
-CHANNEL_ID = 1090329115938259067
+CHANNEL_ID = ""
 reminders = {}
 # Dictionary to store message ID and corresponding roles
 reaction_roles = {}
@@ -206,4 +206,4 @@ async def on_raw_reaction_addpoll(payload):
             await channel.send(embed=embed)
 
 # Run the bot
-bot.run('MTA5MDMyOTIzNzU1MjEwMzQ0NA.GFn98u.kIbDMAwvZ6amEc_a8VZf4XpAcIm5ietghGNk5U')
+bot.run('ID')
