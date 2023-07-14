@@ -1,35 +1,35 @@
 **Potential list of functionalities**
 
 1. Moderation Tools:
-   - Kick and ban users.
+   - Kick and ban users. ✅
    - Manage roles and permissions.
-   - Purge and clean chat.
+   - Purge and clean chat. ✅
    - Create and enforce chat filters.
    - Logging and audit trails for moderation actions.
 
 2. Welcome and Farewell Messages:
-   - Send customized messages to new users joining the server.
-   - Send farewell messages when users leave the server.
+   - Send customized messages to new users joining the server. ✅
+   - Send farewell messages when users leave the server. ✅
 
 3. Custom Commands:
    - Allow server admins to create custom commands with predefined responses.
    - Support for command aliases and parameters.
 
 4. Reaction Roles:
-   - Assign roles to users based on their reactions to specific messages.
-   - Allow users to self-assign roles using reactions.
+   - Assign roles to users based on their reactions to specific messages. ✅
+   - Allow users to self-assign roles using reactions. ✅
 
 5. Auto-Moderation:
    - Automatically detect and delete spam messages.
    - Detect and moderate inappropriate content using machine learning algorithms.
 
 6. Server Statistics and Analytics:
-   - Provide server activity insights, such as message counts, user statistics, and channel usage.
+   - Provide server activity insights, such as message counts, user statistics, and channel usage. ✅
    - Generate graphs and visualizations for server analytics.
 
 7. Reminders and Timers:
-   - Set reminders for specific events or tasks.
-   - Create timers for time-based actions.
+   - Set reminders for specific events or tasks. ✅
+   - Create timers for time-based actions. ✅
 
 8. Music Playback:
    - Stream and play music from various sources like YouTube, SoundCloud, or Spotify.
@@ -48,7 +48,7 @@
     - Connect to external services (e.g., weather, news, cryptocurrency) to provide real-time information.
 
 12. Polls and Voting:
-    - Create polls and conduct voting sessions within the server.
+    - Create polls and conduct voting sessions within the server. ✅
 
 13. User Reputation and Ranking:
     - Assign reputation points to users based on their interactions in the server.
@@ -92,6 +92,3 @@
 23. API Integration with Webhooks:
     - Allow server admins to set up custom webhook integrations with external services.
     - Enable automated notifications and updates from external sources to be posted in Discord channels.
-
-24. Interactive Polls and Quizzes:
-    - Create interactive polls and quizzes with multiple question types (e.g., multiple-choice, true/false) and scoring mechanisms.
