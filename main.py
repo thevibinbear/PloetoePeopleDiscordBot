@@ -10,7 +10,6 @@ reminders = {}
 # Dictionary to store message ID and corresponding roles
 reaction_roles = {}
 
-# Event: When the bot is ready
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} ({bot.user.id})')
@@ -40,6 +39,7 @@ async def on_member_remove(member):
     embed = discord.Embed(description=farewell_message, color=discord.Color.red())
     await channel.send(embed=embed)
 
+#=========================General Commands=========================
 # Command: Ping
 @bot.command()
 async def ping(ctx):
@@ -76,67 +76,88 @@ async def purge(ctx, amount: int):
     embed = discord.Embed(description=f'{amount} messages have been purged.', color=discord.Color.blue())
     await ctx.send(embed=embed)
 
-# Command: Add reaction role
+#=========================Statistics=========================
 @bot.command()
-@commands.has_permissions(manage_roles=True)
-async def add_reaction_role(ctx, role: discord.Role, message_id: int, emoji):
-    message = await ctx.channel.fetch_message(message_id)
-    await message.add_reaction(emoji)
-    reaction_roles[message_id] = {'emoji': emoji, 'role_id': role.id}
-
-# Event: Reaction added
-@bot.event
-async def on_raw_reaction_add(payload):
-    if payload.message_id in reaction_roles:
-        guild_id = payload.guild_id
-        guild = bot.get_guild(guild_id)
-        role_id = reaction_roles[payload.message_id]['role_id']
-        role = discord.utils.get(guild.roles, id=role_id)
-        if role is not None:
-            member = guild.get_member(payload.user_id)
-            if member is not None:
-                await member.add_roles(role)
-
-# Event: Reaction removed
-@bot.event
-async def on_raw_reaction_remove(payload):
-    if payload.message_id in reaction_roles:
-        guild_id = payload.guild_id
-        guild = bot.get_guild(guild_id)
-        role_id = reaction_roles[payload.message_id]['role_id']
-        role = discord.utils.get(guild.roles, id=role_id)
-        if role is not None:
-            member = guild.get_member(payload.user_id)
-            if member is not None:
-                await member.remove_roles(role)
-
-@bot.command()
-async def server_stats(ctx):
-    # Get server information
+async def server(ctx):
     guild = ctx.guild
+
+    # Total Members
     total_members = guild.member_count
-    total_channels = len(guild.channels)
-    total_text_channels = len(guild.text_channels)
-    total_voice_channels = len(guild.voice_channels)
-    total_categories = len(guild.categories)
 
-    # Get message count
-    message_count = 0
-    for channel in guild.text_channels:
-        async for _ in channel.history(limit=None):
-            message_count += 1
+    # Text Channels
+    text_channels = len(guild.text_channels)
 
-    # Create server stats embed
-    embed = discord.Embed(title="Server Statistics", color=discord.Color.blue())
-    embed.add_field(name="Total Members", value=total_members)
-    embed.add_field(name="Total Channels", value=total_channels)
-    embed.add_field(name="Total Text Channels", value=total_text_channels)
-    embed.add_field(name="Total Voice Channels", value=total_voice_channels)
-    embed.add_field(name="Total Categories", value=total_categories)
-    embed.add_field(name="Total Messages", value=message_count)
+    # Voice Channels
+    voice_channels = len(guild.voice_channels)
 
-    await ctx.send(embed=embed)
+    # Categories
+    categories = len(guild.categories)
 
+    # Create and send the server stats embed
+    embed = discord.Embed(title=f"{guild.name} Server Stats", color=discord.Color.green())
+    if guild.icon:
+        embed.set_thumbnail(url=guild.icon.url)
+    embed.add_field(name="Total Members", value=total_members, inline=False)
+    embed.add_field(name="Text Channels", value=text_channels, inline=False)
+    embed.add_field(name="Voice Channels", value=voice_channels, inline=False)
+    embed.add_field(name="Categories", value=categories, inline=False)
+
+    # Get server activity data
+    activity_data = await get_server_activity(guild)
+
+    # Generate a line graph for server activity
+    days = np.arange(1, len(activity_data) + 1)
+    messages = [data['messages'] for data in activity_data]
+    members_joined = [data['members_joined'] for data in activity_data]
+    members_left = [data['members_left'] for data in activity_data]
+
+    # Create the line graph
+    plt.figure(figsize=(10, 6))
+    plt.plot(days, messages, label='Messages')
+    plt.plot(days, members_joined, label='Members Joined')
+    plt.plot(days, members_left, label='Members Left')
+
+    plt.xlabel('Days')
+    plt.ylabel('Count')
+    plt.title('Server Activity')
+    plt.legend()
+
+    # Save the line graph as an image
+    plt.savefig('line_graph.png')
+    plt.close()
+
+    # Add the line graph image to the embed
+    file = discord.File('line_graph.png', filename='line_graph.png')
+    embed.set_image(url='attachment://line_graph.png')
+
+    # Send the server stats embed with the line graph image
+    await ctx.send(embed=embed, file=file)
+
+async def get_server_activity(guild):
+    activity_data = []
+
+    # Get server activity for the last 7 days
+    for i in range(7, 0, -1):
+        activity = {
+            'day': i,
+            'messages': 0,
+            'members_joined': 0,
+            'members_left': 0
+        }
+
+        # Get activity for each day
+        async for entry in guild.audit_logs(limit=None, oldest_first=False):
+            if entry.created_at.date() == (datetime.utcnow().date() - timedelta(days=i)):
+                if entry.action.name == 'member_join':
+                    activity['members_joined'] += 1
+                elif entry.action.name == 'member_remove':
+                    activity['members_left'] += 1
+
+        activity_data.append(activity)
+
+    return activity_data
+    
+#=========================Calender=========================
 # Command: Set reminder
 @bot.command()
 async def remind(ctx, duration: int, *, reminder: str):
@@ -172,6 +193,40 @@ async def timer(ctx, duration: int):
     embed = discord.Embed(description=f"Timer ended for {duration} seconds.", color=discord.Color.green())
     await ctx.send(embed=embed)
 
+#=========================Social Commands=========================
+# Command: Add reaction role
+@bot.command()
+@commands.has_permissions(manage_roles=True)
+async def add_reaction_role(ctx, role: discord.Role, message_id: int, emoji):
+    message = await ctx.channel.fetch_message(message_id)
+    await message.add_reaction(emoji)
+    reaction_roles[message_id] = {'emoji': emoji, 'role_id': role.id}
+
+# Event: Reaction added
+@bot.event
+async def on_raw_reaction_add(payload):
+    if payload.message_id in reaction_roles:
+        guild_id = payload.guild_id
+        guild = bot.get_guild(guild_id)
+        role_id = reaction_roles[payload.message_id]['role_id']
+        role = discord.utils.get(guild.roles, id=role_id)
+        if role is not None:
+            member = guild.get_member(payload.user_id)
+            if member is not None:
+                await member.add_roles(role)
+
+# Event: Reaction removed
+@bot.event
+async def on_raw_reaction_remove(payload):
+    if payload.message_id in reaction_roles:
+        guild_id = payload.guild_id
+        guild = bot.get_guild(guild_id)
+        role_id = reaction_roles[payload.message_id]['role_id']
+        role = discord.utils.get(guild.roles, id=role_id)
+        if role is not None:
+            member = guild.get_member(payload.user_id)
+            if member is not None:
+                await member.remove_roles(role)
 @bot.command()
 async def create_poll(ctx, question, *options):
     if len(options) <= 1:
